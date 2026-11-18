@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WanderAI – AI Agent for Tourism Guide and Trip Planner</title>
+<style>
+:root{--bg:#fff;--surface:#f6f3fb;--text:#1b1626;--muted:#5d5670;--primary:#4b2a7b;--gold:#b8943f;--line:#e2dcef;--onp:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#14101c;--surface:#1e1830;--text:#f1edf8;--muted:#b0a8c4;--primary:#a98be0;--gold:#d9b660;--line:#342b4d;--onp:#14101c}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#14101c;--surface:#1e1830;--text:#f1edf8;--muted:#b0a8c4;--primary:#a98be0;--gold:#d9b660;--line:#342b4d;--onp:#14101c}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.2;margin:0 0 .5em}
+a{color:var(--primary)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--line);z-index:5}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;gap:12px}
+.logo{font:700 20px Georgia,serif;color:var(--primary);text-decoration:none}.logo span{color:var(--gold)}
+nav div a{margin-left:16px;font-size:14px;text-decoration:none;color:var(--muted)}
+@media(max-width:640px){nav div a:not(.cta){display:none}}
+.btn,.cta{background:var(--primary);color:var(--onp);border:0;border-radius:8px;padding:10px 18px;font:600 15px system-ui,sans-serif;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:disabled{opacity:.6;cursor:wait}
+.ghost{background:transparent;color:var(--primary);border:1px solid var(--primary)}
+.hero{padding:72px 0 56px;text-align:center;border-bottom:1px solid var(--line)}
+.hero h1{font-size:clamp(34px,6vw,56px);color:var(--primary)}
+.hero .tag{color:var(--gold);letter-spacing:.14em;font-size:13px;font-weight:700;text-transform:uppercase}
+.hero p{max-width:640px;margin:0 auto 24px;color:var(--muted);font-size:18px}
+.chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.chips b{border:1px solid var(--gold);color:var(--gold);border-radius:99px;padding:4px 16px;font-size:14px}
+section{padding:56px 0;border-bottom:1px solid var(--line)}
+section h2{font-size:30px;color:var(--primary)}
+.sub{color:var(--muted);max-width:680px;margin-bottom:28px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card h3{font-size:18px;margin-bottom:.3em}.card p,.card li{color:var(--muted);font-size:14.5px;margin:0}
+.card ul{margin:6px 0 0;padding-left:18px}
+.num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--gold);color:#fff;font-weight:700;margin-bottom:8px}
+.demo{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.form{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+label{font-size:13px;font-weight:600;color:var(--muted);display:block}
+input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;margin-top:4px}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.steps span{font-size:13px;padding:4px 12px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.steps span.on{background:var(--primary);color:var(--onp);border-color:var(--primary)}
+.steps span.done{border-color:var(--gold);color:var(--gold)}
+#out{margin-top:8px}
+.day{background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.day h3{font-size:18px;margin-bottom:4px}.wx{font-size:13px;color:var(--gold);margin-bottom:8px}
+.stop{display:flex;gap:12px;padding:6px 0;border-top:1px dashed var(--line);font-size:14.5px}
+.stop time{min-width:64px;font-weight:700;color:var(--primary)}.stop small{display:block;color:var(--muted)}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+.refine{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.refine input{flex:1;min-width:200px;margin:0}
+.arch{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center}
+.arch b{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14px}
+.arch .core{background:var(--primary);color:var(--onp);border-color:var(--primary)}
+.arch i{color:var(--gold);font-style:normal}
+footer{padding:36px 0;text-align:center;color:var(--muted);font-size:14px}
+table{border-collapse:collapse;margin:14px auto 0}td,th{border:1px solid var(--line);padding:8px 14px;font-size:14px;text-align:left}th{background:var(--surface)}
+.scroll{overflow-x:auto}
+
+[hidden]{display:none!important}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .8s,transform .8s}.reveal.in{opacity:1;transform:none}
+.hero{background:linear-gradient(120deg,var(--surface),var(--bg),var(--surface));background-size:220% 220%;animation:bg 14s ease infinite}
+@keyframes bg{50%{background-position:100% 50%}}
+.compass{font-size:54px;display:inline-block;animation:float 4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px) rotate(12deg)}}
+.stats{display:flex;gap:28px;justify-content:center;margin-top:30px;flex-wrap:wrap}.stats div{font-size:13px;color:var(--muted)}.stats strong{display:block;font:700 34px Georgia,serif;color:var(--primary)}
+.steps span{transition:all .4s}.steps span.on{animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--primary) 25%,transparent)}}
+.day{animation:up .6s both}@keyframes up{from{opacity:0;transform:translateY(16px)}}
+.btn{transition:transform .2s,opacity .2s}.btn:hover:not(:disabled){transform:translateY(-2px)}
+.card{transition:transform .3s,box-shadow .3s}.card:hover{transform:translateY(-4px);box-shadow:0 8px 22px color-mix(in srgb,var(--primary) 18%,transparent)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.tabs{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}.tab{border:1px solid var(--line);background:var(--bg);color:var(--muted);border-radius:99px;padding:6px 16px;cursor:pointer;font:inherit;font-size:14px}.tab.on{background:var(--primary);color:var(--onp);border-color:var(--primary)}
+.modal{position:fixed;inset:0;background:rgba(10,6,20,.6);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px;animation:up .3s}
+.mbox{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:22px;width:100%;max-width:380px;max-height:90%;overflow:auto}
+.mbox label{margin-bottom:10px}.mbox .btn{margin:4px 4px 0 0}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}.tools label{display:inline-flex;gap:6px;align-items:center;font-weight:400}.tools input{width:auto;margin:0}
+.chat{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}#gl{max-height:240px;overflow:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.bub{padding:8px 12px;border-radius:12px;max-width:85%;font-size:14.5px;white-space:pre-wrap;animation:up .3s}.bub.u{align-self:flex-end;background:var(--primary);color:var(--onp)}.bub.a{background:var(--bg);border:1px solid var(--line)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+.radar{display:flex;gap:20px;align-items:center;flex-wrap:wrap}.radar p{flex:1;min-width:200px}
+.rd{transform-origin:120px 120px;animation:grow 1.2s both}@keyframes grow{from{transform:scale(0)}}
+.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:4px 0 10px}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--gold));transition:width 1.3s}
+#labout{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}#labout:empty{display:none}
+#labout label{display:block;font-weight:400}#labout label input{width:auto;margin-right:6px}#st{font-family:Georgia,serif;font-size:17px}
+.ann{background:var(--primary);color:var(--onp);text-align:center;font-size:14px;padding:8px 40px;position:relative}.ann button{position:absolute;right:10px;top:2px;background:none;border:0;color:inherit;font-size:22px;cursor:pointer}
+#pg{position:fixed;top:0;left:0;height:3px;width:0;background:var(--gold);z-index:30}
+.ib{background:none;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;cursor:pointer;margin-left:8px;font:inherit;font-size:14px}
+.plans{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}.plan{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}.plan.hot{border:2px solid var(--gold)}.price{font:700 34px Georgia,serif;color:var(--primary)}.plan ul{padding-left:18px;color:var(--muted);font-size:14.5px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-bottom:20px}.seg button{border:0;background:none;color:var(--muted);padding:8px 18px;cursor:pointer;font:inherit}.seg .on{background:var(--primary);color:var(--onp)}
+#qt{min-height:110px;transition:opacity .25s}.dots{display:flex;gap:8px;margin-top:12px}.dots button{width:10px;height:10px;border-radius:50%;border:0;background:var(--line);cursor:pointer;padding:0}.dots .on{background:var(--gold)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:10px}summary{cursor:pointer;font-weight:600}details p{color:var(--muted);margin:8px 0 0}
+.cols{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));text-align:left;margin-bottom:24px}.cols h4{margin:0 0 8px;color:var(--text);font-size:14px}.cols a{display:block;color:var(--muted);text-decoration:none;font-size:14px;margin:4px 0}
+.news{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0 24px}.news input{max-width:280px;margin:0}
+.cookie{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:560px;margin:auto;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px;z-index:25;box-shadow:0 8px 30px rgba(0,0,0,.25);font-size:14px}
+#top2{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:42px;height:42px;border-radius:50%;border:0;background:var(--primary);color:var(--onp);cursor:pointer;z-index:15;opacity:0;pointer-events:none;transition:opacity .3s}#top2.show{opacity:1;pointer-events:auto}
+.pal{align-items:flex-start;padding-top:12vh}.pal a{display:block;padding:10px 12px;border-radius:8px;text-decoration:none;color:var(--text)}.pal a:hover{background:var(--surface)}
+#top2{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+#bot{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:22}
+#bf{width:62px;height:62px;border-radius:50%;border:0;background:var(--primary);cursor:pointer;display:grid;place-items:center;box-shadow:0 6px 20px rgba(0,0,0,.3);animation:bob 3s ease-in-out infinite;padding:0}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.eye{animation:blink 4s infinite;transform-box:fill-box;transform-origin:center}@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+.ant{animation:pulse2 1.4s infinite}@keyframes pulse2{50%{opacity:.3}}
+#bp{position:absolute;right:0;bottom:76px;width:min(360px,calc(100vw - 32px));height:min(480px,70vh);background:var(--bg);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden}
+#bp[hidden]{display:none}
+.bh{background:var(--primary);color:var(--onp);padding:10px 14px;display:flex;align-items:center;gap:10px}.bh b{font-family:Georgia,serif;font-size:16px}.bh small{display:block;opacity:.85;font-size:11px}
+.brain{font-size:24px}#bp.think .brain{animation:pulse2 .6s infinite}
+#bm{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.bc{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 8px}.bc button{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:99px;padding:4px 10px;font-size:12.5px;cursor:pointer}
+.bi{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}.bi input{margin:0}
+</style>
+</head>
+<body>
+<div id="pg"></div><div class="ann" id="ann">New: the AI Lab is live. Try the vibe radar and trip story.<button id="annx" aria-label="Dismiss announcement">×</button></div>
+<nav><div class="wrap"><a class="logo" href="#top">Wander<span>AI</span></a>
+<div><a href="#agent">Agent</a><a href="#lab">AI Lab</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a class="cta" href="#planner">Plan a trip</a><button class="ib" id="srch">Search</button><button class="ib" id="thm" aria-label="Toggle light or dark theme">◐</button><button class="btn ghost" id="auth" style="margin-left:8px;padding:6px 14px">Sign in</button></div></div></nav>
+
+<header class="hero" id="top"><div class="wrap">
+<div class="compass">🧭</div><div class="tag">MIT-ADT University, Pune</div>
+<h1>One Agent. Every Journey. Personalised.</h1>
+<p>WanderAI is an AI agent for tourism guidance and trip planning. Tell it where, how long, your budget and interests. It plans, guides and adapts.</p>
+<a class="cta" href="#planner">Try the planner</a>
+<div class="chips"><b>Plan.</b><b>Explore.</b><b>Adapt.</b></div><div class="stats"><div><strong data-n="5">0</strong>agent steps</div><div><strong data-n="4">0</strong>core modules</div><div><strong data-n="3">0</strong>user roles</div></div>
+</div></header>
+
+<section class="reveal" id="problem"><div class="wrap">
+<h2>The problem we identified</h2>
+<p class="sub">Travel information is scattered across blogs, maps, review sites and weather apps, and every trip means hours of manual research.</p>
+<div class="grid">
+<div class="card"><h3>Fragmented sources</h3><p>Travellers juggle many tabs and compare options by hand.</p></div>
+<div class="card"><h3>Generic itineraries</h3><p>Plans ignore personal interests, budget, time and pace.</p></div>
+<div class="card"><h3>Plans that break</h3><p>Rain, closures and crowds are not accounted for.</p></div>
+<div class="card"><h3>Missed local gems</h3><p>Lesser-known experiences rarely surface in generic guides.</p></div>
+</div></div></section>
+
+<section class="reveal" id="agent"><div class="wrap">
+<h2>How the AI agent works</h2>
+<p class="sub">An LLM reasons over the request, grounds its answers with RAG, calls live tools and refines the plan through conversation.</p>
+<div class="grid">
+<div class="card"><span class="num">1</span><h3>Understand</h3><p>The LLM parses destination, days, budget and interests.</p></div>
+<div class="card"><span class="num">2</span><h3>Retrieve</h3><p>RAG fetches relevant place data from the vector database.</p></div>
+<div class="card"><span class="num">3</span><h3>Use tools</h3><p>Maps and Weather APIs supply distances, routes and forecasts.</p></div>
+<div class="card"><span class="num">4</span><h3>Generate</h3><p>An optimised day-wise itinerary is built.</p></div>
+<div class="card"><span class="num">5</span><h3>Refine</h3><p>Chat feedback updates the plan instantly.</p></div>
+</div></div></section>
+
+<section class="reveal" id="planner"><div class="wrap">
+<h2>Plan a trip with WanderAI</h2>
+<p class="sub">This live demo asks Claude to act as the planning agent. In the full system, place data comes from the RAG knowledge base and weather from a Weather API; here both are model estimates and should be verified before travelling.</p>
+<div class="demo">
+<div class="form">
+<label>Destination<input id="dest" value="Pune, India"></label>
+<label>Days<select id="days"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+<label>Budget<select id="budget"><option>Budget</option><option selected>Mid-range</option><option>Premium</option></select></label>
+<label>Interests<input id="int" value="history, food, hill forts"></label>
+</div>
+<div class="tools"><button class="btn" id="go">Generate itinerary</button><button class="btn ghost" id="sur">Surprise me (auto-pilot)</button><label><input type="checkbox" id="auto"> Auto-save to my account</label></div>
+<div class="steps" id="steps"><span>1 Understand</span><span>2 Retrieve</span><span>3 Use tools</span><span>4 Generate</span><span>5 Refine</span></div>
+<div id="out"></div>
+<div class="refine" id="ref" hidden><input id="rq" placeholder="Refine: “make day 2 relaxed”"><button class="btn ghost" id="rb">Refine plan</button></div>
+<div class="tools" id="tools" hidden><button class="btn ghost" id="sv">Save trip</button><button class="btn ghost" id="rain">Auto-adapt for rain</button><button class="btn ghost" id="cp">Copy plan</button><span class="note" id="tm"></span></div>
+<div class="chat"><h3 style="font-size:18px">Ask the AI guide</h3><div id="gl"></div><div class="refine"><input id="gq" placeholder="e.g. What should I eat near Shaniwar Wada?"><button class="btn ghost" id="gb">Ask</button></div></div>
+</div></div></section>
+
+<section class="reveal" id="lab"><div class="wrap">
+<h2>AI Lab: five extras</h2>
+<p class="sub">Generate a plan above, then let separate agent calls analyse it. Pick a mood skin to restyle the whole site.</p>
+<div class="tools"><button class="btn" data-lab="vibe">Vibe radar</button><button class="btn" data-lab="story">Trip story + voice</button><button class="btn" data-lab="phrase">Local phrasebook</button><button class="btn" data-lab="pack">Packing, budget and risk autopilot</button></div>
+<div class="tools"><span class="note">Mood skin:</span><button class="tab" data-skin="sunset">Sunset</button><button class="tab" data-skin="ocean">Ocean</button><button class="tab" data-skin="forest">Forest</button><button class="tab" data-skin="">Default</button></div>
+<div id="labout" aria-live="polite"></div>
+</div></section>
+
+<section class="reveal" id="modules"><div class="wrap">
+<h2>Core modules and user roles</h2>
+<div class="grid" style="margin-top:20px">
+<div class="card"><h3>Conversational Planner</h3><ul><li>Chat-based trip input</li><li>Preference understanding</li><li>Multi-turn refinement</li></ul></div>
+<div class="card"><h3>Itinerary &amp; Routing</h3><ul><li>Day-wise schedules</li><li>Maps / OSM routes</li><li>Distance and time estimates</li></ul></div>
+<div class="card"><h3>Tourist Guide (RAG)</h3><ul><li>Place history and facts</li><li>Local tips and food</li><li>Grounded answers</li></ul></div>
+<div class="card"><h3>Live Context</h3><ul><li>Weather forecasts</li><li>Plan adjustment</li><li>Opening-hour awareness</li></ul></div>
+</div>
+<div class="grid" style="margin-top:16px">
+<div class="card"><h3>Travellers</h3><p>Ask, plan, explore and tweak trips on the go.</p></div>
+<div class="card"><h3>Content Admins</h3><p>Curate destination data for the knowledge base.</p></div>
+<div class="card"><h3>System Admins</h3><p>Manage users, API keys and platform health.</p></div>
+</div></div></section>
+
+<section class="reveal" id="architecture"><div class="wrap">
+<h2>System architecture</h2>
+<p class="sub">A modular, API-driven design that can grow to new cities and languages.</p>
+<div class="arch"><b>Traveller</b><i>→</i><b>React / Flutter</b><i>→</i><b>FastAPI / Flask</b><i>→</i><b class="core">AI Agent<br>LLM + RAG + Tools</b></div>
+<div class="arch" style="margin-top:14px"><b>FAISS / ChromaDB</b><b>MongoDB / MySQL</b><b>Google Maps / OSM</b><b>Weather API</b></div>
+</div></section>
+
+<section class="reveal" id="roadmap"><div class="wrap">
+<h2>Development roadmap</h2>
+<div class="grid" style="margin-top:20px">
+<div class="card"><h3>Phase 1 · Data &amp; RAG</h3><p>Collect destination data, build the vector database and retrieval pipeline.</p></div>
+<div class="card"><h3>Phase 2 · Agent &amp; Tools</h3><p>LLM agent logic, Maps and Weather integration, itinerary generation.</p></div>
+<div class="card"><h3>Phase 3 · App</h3><p>FastAPI backend, React / Flutter UI, chat and map views.</p></div>
+<div class="card"><h3>Phase 4 · Smarter travel</h3><p>Multilingual support, voice assistant, budget and booking aids.</p></div>
+</div></div></section>
+
+<section class="reveal"><div class="wrap" style="text-align:center">
+<h2>The builders</h2>
+<div class="scroll"><table><tr><th>Name</th><th>Enrolment No.</th><th>Class</th></tr>
+<tr><td>Viraj</td><td>ADT24SOCB0878</td><td>TY AIEC-1</td></tr>
+<tr><td>Arpan</td><td>ADT24SOCB0205</td><td>TY AIA-11</td></tr>
+<tr><td>Sudhanshu</td><td>ADT24SOCB1222</td><td>TY CC-3</td></tr></table></div>
+<p class="note">Under the guidance of Prof. Aman Kamble · MIT School of Computing · Sem-1, A.Y. 2026-27</p>
+</div></section>
+
+<section class="reveal" id="features"><div class="wrap"><h2>Why choose WanderAI</h2><p class="sub">The features a modern travel platform needs, built around one grounded AI agent.</p><div class="grid">
+<div class="card"><h3>Conversational planning</h3><p>Describe your trip in plain language and refine it by chatting.</p></div>
+<div class="card"><h3>Grounded answers</h3><p>RAG over a curated knowledge base reduces made-up places and hours.</p></div>
+<div class="card"><h3>Weather-aware</h3><p>One-tap re-planning when rain or closures change your day.</p></div>
+<div class="card"><h3>Route-smart</h3><p>Stops are ordered to cut unnecessary travel time.</p></div>
+<div class="card"><h3>Role-based access</h3><p>Travellers, content admins and system admins see what they need.</p></div>
+<div class="card"><h3>Privacy first</h3><p>This demo keeps your account and trips only in your own browser.</p></div>
+<div class="card"><h3>Accessible design</h3><p>Keyboard friendly, light and dark themes, reduced-motion support.</p></div>
+<div class="card"><h3>Coming next <small>(planned)</small></h3><p>Multilingual UI, voice input, offline itineraries and booking aids.</p></div>
+</div></div></section>
+
+<section class="reveal" id="pricing"><div class="wrap" style="text-align:center"><h2>Simple plans</h2><p class="sub" style="margin-inline:auto">Illustrative pricing for the concept. No payments are processed on this site.</p>
+<div class="seg"><button class="on" data-bill="m">Monthly</button><button data-bill="y">Yearly (save 20%)</button></div>
+<div class="plans" style="text-align:left">
+<div class="plan"><h3>Explorer</h3><div class="price">₹0</div><ul><li>3 AI trip plans a month</li><li>AI guide chat</li><li>Save trips</li></ul></div>
+<div class="plan hot"><h3>Voyager</h3><div class="price">₹<span data-m="299" data-y="239">299</span><small style="font-size:14px"> / month</small></div><ul><li>Unlimited plans</li><li>AI Lab tools</li><li>Weather re-planning</li></ul></div>
+<div class="plan"><h3>Tourism Partner</h3><div class="price">Custom</div><ul><li>Curated knowledge base</li><li>Admin dashboard</li><li>Priority support</li></ul></div>
+</div></div></section>
+
+<section class="reveal" id="voices"><div class="wrap"><h2>What people could say</h2><p class="sub">Sample feedback written for illustration; these are not real customers.</p><div id="qt" aria-live="polite"></div><div class="dots" id="dots"></div></div></section>
+
+<section class="reveal" id="insights"><div class="wrap"><h2>Insights</h2><div class="grid" style="margin-top:16px">
+<div class="card"><h3>How RAG keeps trip plans honest</h3><p>Why grounding an AI in curated data beats guessing.</p></div>
+<div class="card"><h3>Planning around the monsoon</h3><p>Indoor swaps and timing tricks for rainy travel days.</p></div>
+<div class="card"><h3>Lesser-known Pune</h3><p>Local spots that generic itineraries tend to skip.</p></div>
+</div></div></section>
+
+<section class="reveal" id="faq"><div class="wrap"><h2>Frequently asked questions</h2>
+<details><summary>Is WanderAI a booking platform?</summary><p>No. The first version focuses on planning and guidance. Booking is a planned later phase.</p></details>
+<details><summary>Where does the weather and place data come from?</summary><p>In this demo they are AI estimates. The full system uses a Weather API, Maps or OpenStreetMap, and a curated vector database.</p></details>
+<details><summary>Is my data safe?</summary><p>Accounts and trips in this demo are stored only in your browser. A production version would use a secured backend.</p></details>
+<details><summary>Which destinations are supported?</summary><p>Any destination can be planned by the AI; the knowledge base currently has sample Pune entries that admins can extend.</p></details>
+<details><summary>Can tourism organisations contribute content?</summary><p>Yes. Content Admin accounts can add knowledge base entries that the agent retrieves.</p></details>
+</div></section>
+
+<section class="reveal" id="contact"><div class="wrap"><h2>Contact us</h2><p class="sub">Questions, feedback or partnership ideas.</p>
+<form id="cf" class="demo"><div class="form"><label>Name<input required></label><label>Email<input type="email" required></label><label>Topic<select><option>General</option><option>Partnership</option><option>Feedback</option><option>Support</option></select></label></div><label style="margin-top:12px">Message<input required></label><p><button class="btn" type="submit">Send message</button></p><p class="note" id="cm" role="status"></p></form></div></section>
+
+<section id="account" hidden><div class="wrap"><h2>My WanderAI</h2><div class="tabs" id="tabs"></div><div id="tb"></div></div></section>
+<div id="modal" class="modal" hidden><div class="mbox"><h3 id="mt">Sign in</h3><form id="af">
+<label id="nml" hidden>Name<input id="nm" autocomplete="name"></label>
+<label>Email<input id="em" type="email" required autocomplete="username"></label>
+<label>Password<input id="pw" type="password" required minlength="6" autocomplete="current-password"></label>
+<label id="rll" hidden>Role<select id="rl"><option>Traveller</option><option>Content Admin</option><option>System Admin</option></select></label>
+<p id="ae" class="note" style="color:#c0392b"></p>
+<button class="btn" type="submit" id="sb">Sign in</button><button type="button" class="btn ghost" id="sw">Create account</button><button type="button" class="btn ghost" id="cl">Close</button></form>
+<p class="note">Demo only: accounts are stored hashed in this browser, and roles are chosen at sign-up. A production build would use FastAPI with JWT and server-assigned roles.</p></div></div>
+<footer><div class="wrap"><h3 style="color:var(--primary)">Stay in the loop</h3><form class="news" id="nf"><input type="email" required placeholder="you@example.com" aria-label="Email for newsletter"><button class="btn">Subscribe</button></form><p class="note" id="nm2" role="status"></p>
+<div class="cols"><div><h4>Product</h4><a href="#planner">Trip planner</a><a href="#lab">AI Lab</a><a href="#features">Features</a><a href="#pricing">Pricing</a></div><div><h4>Company</h4><a href="#problem">Our mission</a><a href="#roadmap">Roadmap</a><a href="#voices">Feedback</a><a href="#contact">Contact</a></div><div><h4>Resources</h4><a href="#insights">Insights</a><a href="#faq">FAQ</a><a href="#architecture">Architecture</a><a href="#modules">Modules</a></div><div><h4>Built at</h4><span>MIT-ADT University, Pune<br>MIT School of Computing</span></div></div>
+© WanderAI · One Agent. Every Journey. Personalised.</div></footer>
+<button id="top2" aria-label="Back to top">↑</button>
+<div class="cookie" id="ck" hidden>This demo saves your sign-in and trips in your browser only. <button class="btn" id="cka" style="padding:6px 14px">OK</button> <button class="btn ghost" id="ckd" style="padding:6px 14px">Dismiss</button></div>
+<div id="bot"><div id="bp" hidden role="dialog" aria-label="WanderBot chat"><div class="bh"><span class="brain" aria-hidden="true">🧠</span><div><b>WanderBot</b><small id="bs"></small></div></div><div id="bm" aria-live="polite"><div class="bub a">Beep boop! I’m WanderBot. Ask me about WanderAI or planning a trip.</div></div><div class="bc"><button>What is WanderAI?</button><button>Which tech stack is used?</button><button>How does RAG help?</button><button>Plan 2 days in Goa</button></div><form class="bi" id="bform"><input id="bq" placeholder="Ask me anything about the topic…" aria-label="Message WanderBot" autocomplete="off"><button class="btn" type="submit">Send</button></form></div>
+<button id="bf" aria-label="Open WanderBot chat" aria-expanded="false"><svg viewBox="0 0 48 48" width="42" height="42" aria-hidden="true"><line x1="24" y1="7" x2="24" y2="12" stroke="#fff" stroke-width="2"/><circle class="ant" cx="24" cy="5" r="3" fill="#f0b040"/><rect x="8" y="12" width="32" height="26" rx="8" fill="#fff"/><rect class="eye" x="14" y="21" width="6" height="8" rx="3" fill="#4b2a7b"/><rect class="eye" x="28" y="21" width="6" height="8" rx="3" fill="#4b2a7b"/><rect x="17" y="32" width="14" height="2" rx="1" fill="#4b2a7b"/><rect x="3" y="20" width="4" height="10" rx="2" fill="#fff"/><rect x="41" y="20" width="4" height="10" rx="2" fill="#fff"/></svg></button></div>
+<div id="pal" class="modal pal" hidden><div class="mbox"><input id="pq" placeholder="Search this site…" aria-label="Search this site"><div id="pl"></div></div></div>
+
+<script>
+const $=id=>document.getElementById(id),L=localStorage,S=sessionStorage;
+const J=(k,d)=>{try{const v=JSON.parse(L.getItem(k));return v==null?d:v}catch(e){return d}};
+const W=(k,v)=>{try{L.setItem(k,JSON.stringify(v))}catch(e){}};
+let plan=null,busy=false,user=null,mode="login";
+const stepEls=[...$("steps").children];
+const setStep=i=>stepEls.forEach((e,k)=>e.className=k<i?"done":k===i?"on":"");
+const esc=s=>{const d=document.createElement("div");d.textContent=s==null?"":String(s);return d.innerHTML};
+const msg=t=>{$("tm").textContent=t;setTimeout(()=>$("tm").textContent="",3500)};
+const stat=k=>{const s=J("wai_stats",{plans:0,chats:0});s[k]=(s[k]||0)+1;W("wai_stats",s)};
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.1});
+document.querySelectorAll(".reveal").forEach(e=>io.observe(e));
+document.querySelectorAll("[data-n]").forEach(el=>{const n=+el.dataset.n;let c=0;const t=setInterval(()=>{el.textContent=++c;if(c>=n)clearInterval(t)},260)});
+
+/* Knowledge base (RAG demo) */
+const SEED=[{id:"s1",title:"Shaniwar Wada Pune history fort",text:"Peshwa-era fort-palace in central Pune, built in the 1730s; visit in the morning and stay for the evening light show if running."},{id:"s2",title:"Sinhagad fort hill fort trek Pune",text:"Hill fort south-west of Pune, popular for early-morning treks; avoid steep climbs in heavy rain."},{id:"s3",title:"Pune food misal pav local",text:"Misal pav is a spicy sprouts curry served with bread and is a classic Maharashtrian breakfast."}];
+const kb=()=>J("wai_kb",SEED);
+function retrieve(q){const w=q.toLowerCase().split(/[^a-z0-9]+/).filter(x=>x.length>2);
+ return kb().map(e=>({e,s:w.filter(x=>(e.title+" "+e.text).toLowerCase().includes(x)).length})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,3).map(x=>x.e)}
+const kbText=k=>k.length?"Use these verified knowledge base entries where relevant: "+k.map(x=>x.title+": "+x.text).join(" | ")+". ":"";
+
+/* Auth */
+async function hash(pw,salt){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveBits"]);
+ const b=await crypto.subtle.deriveBits({name:"PBKDF2",salt:new TextEncoder().encode(salt),iterations:100000,hash:"SHA-256"},k,256);
+ return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function setMode(m){mode=m;const r=m==="register";$("mt").textContent=r?"Create account":"Sign in";$("sb").textContent=r?"Create account":"Sign in";$("sw").textContent=r?"I have an account":"Create account";$("nml").hidden=$("rll").hidden=!r;$("ae").textContent=""}
+function openModal(m){setMode(m||"login");$("modal").hidden=false}
+$("sw").onclick=()=>setMode(mode==="login"?"register":"login");
+$("cl").onclick=()=>$("modal").hidden=true;
+$("auth").onclick=()=>{if(user){S.removeItem("wai_sess");user=null;$("auth").textContent="Sign in";$("account").hidden=true}else openModal()};
+$("af").onsubmit=async e=>{e.preventDefault();const em=$("em").value.trim().toLowerCase(),pw=$("pw").value,us=J("wai_users",{});$("ae").textContent="";
+ try{
+  if(mode==="register"){if(us[em]){$("ae").textContent="That email is already registered.";return}
+   const salt=[...crypto.getRandomValues(new Uint8Array(8))].join("-");
+   us[em]={name:$("nm").value.trim()||em.split("@")[0],role:$("rl").value,salt,hash:await hash(pw,salt)};W("wai_users",us)}
+  else{const u=us[em];if(!u||u.hash!==await hash(pw,u.salt)){$("ae").textContent="Incorrect email or password.";return}}
+  S.setItem("wai_sess",em);login(em);$("modal").hidden=true;$("af").reset()
+ }catch(x){$("ae").textContent="Sign-in is not available in this browser."}};
+function login(em){const u=J("wai_users",{})[em];if(!u)return;user={email:em,name:u.name,role:u.role};
+ $("auth").textContent=user.name+" · Sign out";$("account").hidden=false;acct("Saved trips")}
+
+/* Account area */
+function acct(tab){
+ const r=user.role,tabs=["Saved trips"];if(r!=="Traveller")tabs.push("Knowledge base");if(r==="System Admin")tabs.push("Platform");
+ if(!tabs.includes(tab))tab=tabs[0];
+ $("tabs").innerHTML=tabs.map(t=>`<button class="tab${t===tab?" on":""}" data-t="${t}">${t}</button>`).join("");
+ $("tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>acct(b.dataset.t));
+ const tb=$("tb");
+ if(tab==="Saved trips"){const ts=J("wai_trips_"+user.email,[]);
+  tb.innerHTML=`<p class="note">Signed in as ${esc(user.name)} (${esc(r)})</p>`+(ts.length?ts.map(t=>`<div class="card row"><div><h3>${esc(t.title)}</h3><p>${new Date(t.ts).toLocaleDateString()}</p></div><div><button class="btn ghost" data-o="${t.id}">Open</button> <button class="btn ghost" data-d="${t.id}">Delete</button></div></div>`).join(""):'<p class="note">No saved trips yet. Generate a plan and press Save trip.</p>');
+  tb.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{plan=ts.find(t=>t.id==b.dataset.o).plan;render(plan);$("planner").scrollIntoView({behavior:"smooth"})});
+  tb.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{W("wai_trips_"+user.email,ts.filter(t=>t.id!=b.dataset.d));acct(tab)})}
+ else if(tab==="Knowledge base"){const k=kb();
+  tb.innerHTML=`<p class="note">Entries added here are retrieved by the agent as grounded context (a browser-side demo of the RAG vector database).</p><div class="form"><label>Title / keywords<input id="kt"></label><label>Content<input id="kc"></label></div><p><button class="btn" id="ka">Add entry</button></p>`+k.map(x=>`<div class="card row"><div><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></div><button class="btn ghost" data-k="${x.id}">Remove</button></div>`).join("");
+  $("ka").onclick=()=>{const t=$("kt").value.trim(),c=$("kc").value.trim();if(!t||!c)return;W("wai_kb",[...k,{id:"k"+Date.now(),title:t,text:c}]);acct(tab)};
+  tb.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{W("wai_kb",k.filter(x=>x.id!=b.dataset.k));acct(tab)})}
+ else{const s=J("wai_stats",{plans:0,chats:0});
+  tb.innerHTML=`<div class="grid"><div class="card"><h3>${Object.keys(J("wai_users",{})).length}</h3><p>Registered users</p></div><div class="card"><h3>${s.plans||0}</h3><p>Plans generated</p></div><div class="card"><h3>${s.chats||0}</h3><p>Guide questions</p></div><div class="card"><h3>${kb().length}</h3><p>Knowledge base entries</p></div></div><p class="note">Browser-local demo statistics.</p>`}
+}
+
+/* Agent */
+function render(p){
+ $("out").innerHTML=(p.days||[]).map((d,k)=>`<div class="day" style="animation-delay:${k*.15}s"><h3>${esc(d.title)}</h3><div class="wx">${esc(d.weather||"")}${d.cost?" · Est. cost "+esc(d.cost):""}</div>`+(d.stops||[]).map(s=>`<div class="stop"><time>${esc(s.time)}</time><div>${esc(s.place)}<small>${esc(s.tip||"")}</small></div></div>`).join("")+`</div>`).join("")+
+ (p.total?`<div class="note"><b>Estimated total:</b> ${esc(p.total)}</div>`:"")+((p.tips&&p.tips.length)?`<div class="note"><b>Local tips:</b> ${p.tips.map(esc).join(" · ")}</div>`:"")+`<div class="note">${esc(p.source||"")}</div>`;
+ $("tools").hidden=false;$("ref").hidden=false}
+const planText=()=>plan?plan.days.map(d=>d.title+"\n"+(d.stops||[]).map(s=>`  ${s.time} ${s.place}`).join("\n")).join("\n\n"):"";
+function fallback(dest,n,budget,ints){
+ const I=ints.split(",").map(s=>s.trim()).filter(Boolean),pick=k=>I[k%Math.max(I.length,1)]||"local highlights",days=[];
+ for(let i=0;i<n;i++)days.push({title:`Day ${i+1}: ${pick(i)} in ${dest}`,weather:"Check the forecast; keep an indoor option ready.",stops:[{time:"09:00",place:`Morning: top ${pick(i)} spot`,tip:"Start early to avoid crowds"},{time:"13:00",place:"Lunch at a well-reviewed local eatery",tip:`${budget} pick`},{time:"15:00",place:`Afternoon: ${pick(i+1)} experience`,tip:"Group nearby stops to cut travel time"},{time:"19:00",place:"Evening walk and local food",tip:"Try a regional speciality"}]});
+ return{days,tips:["Carry water and a rain cover","Confirm opening hours"],source:"Offline template shown because the AI agent was unavailable."}}
+async function llm(prompt,json){const s=await claude.use("sample").catch(()=>null);if(!s)throw{code:"none"};return json?s.json(prompt):(await s(prompt)).text}
+const FMT='Reply ONLY with JSON: {"days":[{"title":string,"weather":string (typical seasonal weather and an indoor alternative),"cost":string (estimated INR for that day at the budget level),"stops":[{"time":"HH:MM","place":string,"tip":string}]}],"total":string,"tips":[string]}. 4 to 5 stops per day, ordered to minimise travel.';
+const btns=v=>["go","sur","rb","rain"].forEach(i=>$(i).disabled=v);
+async function run(prompt,fb){
+ if(busy)return;busy=true;btns(true);let i=0;setStep(0);const t=setInterval(()=>{if(i<3)setStep(++i)},1400);
+ try{
+  try{plan=await llm(prompt,true);plan.source="Generated by Claude acting as the WanderAI agent. Weather, costs and details are estimates, so verify before you travel."}
+  catch(e){if(e&&["none","not_granted","rate_limited"].includes(e.code))plan=fb();else throw e}
+  clearInterval(t);setStep(4);render(plan);setTimeout(()=>setStep(5),600);stat("plans");
+  if($("auto").checked&&user)saveTrip(true)
+ }catch(e){clearInterval(t);setStep(-1);$("out").innerHTML='<div class="note">The agent couldn’t respond right now. Please try again.</div>'}
+ busy=false;btns(false)}
+$("go").onclick=()=>{const d=$("dest").value.trim()||"Pune, India",n=+$("days").value,b=$("budget").value,it=$("int").value.trim(),k=retrieve(d+" "+it);
+ stepEls[1].textContent=`2 Retrieve (${k.length} KB)`;
+ run(`You are WanderAI, a tourism guide and trip planner agent. Plan a ${n}-day trip to ${d}. Budget: ${b}. Interests: ${it}. ${kbText(k)}${FMT}`,()=>fallback(d,n,b,it))};
+$("sur").onclick=()=>{const D=["Jaipur, India","Goa, India","Udaipur, India","Kyoto, Japan","Lisbon, Portugal"],I=["food, markets","history, architecture","beaches, nightlife","nature, photography","culture, museums"];
+ const r=a=>a[Math.floor(Math.random()*a.length)];$("dest").value=r(D);$("int").value=r(I);$("days").value=r(["2","3","4"]);$("go").click()};
+$("rb").onclick=()=>{const q=$("rq").value.trim();if(!q||!plan)return;
+ run(`You are WanderAI. Current plan JSON: ${JSON.stringify({days:plan.days,tips:plan.tips})}. The traveller asks: "${q}". Update the plan. ${FMT}`,()=>plan);$("rq").value=""};
+$("rain").onclick=()=>{if(!plan)return;
+ run(`You are WanderAI. Current plan JSON: ${JSON.stringify({days:plan.days,tips:plan.tips})}. Heavy rain is forecast for the whole trip. Automatically replace outdoor stops with indoor or covered alternatives, keep routes sensible and mention what changed in the weather note. ${FMT}`,()=>plan)};
+function saveTrip(quiet){if(!plan)return;if(!user){openModal();return}
+ const k="wai_trips_"+user.email,ts=J(k,[]);ts.unshift({id:"t"+Date.now(),title:$("dest").value+" · "+$("days").value+" days",ts:Date.now(),plan});W(k,ts);
+ msg(quiet?"Auto-saved.":"Trip saved.");acct(document.querySelector(".tab.on")?.dataset.t||"Saved trips")}
+$("sv").onclick=()=>saveTrip(false);
+$("cp").onclick=async()=>{try{await navigator.clipboard.writeText(planText());msg("Plan copied.")}catch(e){msg("Copy was blocked by the browser.")}};
+const bub=(t,c)=>{const d=document.createElement("div");d.className="bub "+c;d.textContent=t;$("gl").appendChild(d);$("gl").scrollTop=1e5;return d};
+async function ask(){const q=$("gq").value.trim();if(!q)return;$("gq").value="";bub(q,"u");const m=bub("Thinking…","a"),k=retrieve(q+" "+$("dest").value);
+ try{m.textContent=await llm(`You are WanderAI, a friendly tourist guide for ${$("dest").value}. ${kbText(k)}${plan?"Current plan: "+planText()+". ":""}Answer in under 120 words: ${q}`,false);stat("chats")}
+ catch(e){m.textContent="The guide isn’t available right now."}}
+$("gb").onclick=ask;$("gq").onkeydown=e=>{if(e.key==="Enter")ask()};
+/* AI Lab */
+function radar(v){const K=["adventure","culture","food","relax","nature"],c=120,R=90;
+ const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/5;return [c+r*Math.cos(a),c+r*Math.sin(a)]};
+ const poly=r=>K.map((_,i)=>pt(i,r).join(",")).join(" ");
+ const data=K.map((k,i)=>pt(i,R*Math.max(0,Math.min(100,+v[k]||0))/100).join(",")).join(" ");
+ return `<svg viewBox="0 0 240 240" width="260" role="img" aria-label="Trip vibe radar">${[.33,.66,1].map(f=>`<polygon points="${poly(R*f)}" fill="none" stroke="var(--line)"/>`).join("")}<polygon class="rd" points="${data}" fill="var(--primary)" fill-opacity=".35" stroke="var(--primary)" stroke-width="2"/>${K.map((k,i)=>{const [x,y]=pt(i,R+16);return `<text x="${x}" y="${y}" text-anchor="middle" font-size="11" fill="var(--muted)">${k} ${Math.round(+v[k]||0)}</text>`}).join("")}</svg>`}
+const LAB={
+ vibe:{json:1,p:()=>`Rate this itinerary on five vibes from 0 to 100. Reply ONLY JSON: {"adventure":n,"culture":n,"food":n,"relax":n,"nature":n,"summary":string (one sentence)}. Plan: ${planText()}`,r:v=>`<div class="radar">${radar(v)}<p>${esc(v.summary)}</p></div>`},
+ story:{p:()=>`Write a vivid 150-word second-person travel story of this trip as one paragraph with no title. Plan: ${planText()}`,r:t=>`<p id="st">${esc(t)}</p><p><button class="btn ghost" id="spk">Read aloud</button> <button class="btn ghost" id="stp">Stop</button></p>`,
+  after:()=>{$("spk").onclick=()=>{try{speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance($("st").textContent))}catch(e){}};$("stp").onclick=()=>{try{speechSynthesis.cancel()}catch(e){}}}},
+ phrase:{json:1,p:()=>`List 8 useful local-language phrases for a tourist in ${$("dest").value}. Reply ONLY JSON: {"language":string,"phrases":[{"en":string,"local":string,"say":string (romanised pronunciation)}]}`,
+  r:v=>`<h3>${esc(v.language)}</h3><div class="scroll"><table>${(v.phrases||[]).map(p=>`<tr><td>${esc(p.en)}</td><td>${esc(p.local)}</td><td>${esc(p.say)}</td></tr>`).join("")}</table></div>`},
+ pack:{json:1,p:()=>`You are WanderAI autopilot. Trip: ${$("dest").value}, ${$("days").value} days, ${$("budget").value}. Plan: ${planText()}. Reply ONLY JSON: {"budget":{"Stay":n,"Food":n,"Transport":n,"Activities":n} (per person, INR),"packing":[6 to 8 short strings],"risks":[2 to 3 short strings on weather, crowds or closures, each with a fix],"score":integer 1-100 readiness}`,
+  r:v=>{const b=v.budget||{},tot=Object.values(b).reduce((a,x)=>a+(+x||0),0)||1;return `<h3>Readiness ${Math.round(+v.score||0)}/100</h3><div class="bar"><i data-w="${Math.round(+v.score||0)}"></i></div><h3>Estimated budget: ₹${tot.toLocaleString("en-IN")} per person</h3>${Object.entries(b).map(([k,x])=>`<p class="note">${esc(k)} ₹${(+x||0).toLocaleString("en-IN")}</p><div class="bar"><i data-w="${Math.round((+x||0)/tot*100)}"></i></div>`).join("")}<h3>Risks and fixes</h3><ul>${(v.risks||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul><h3>Packing list</h3>${(v.packing||[]).map(x=>`<label><input type="checkbox">${esc(x)}</label>`).join("")}`}}};
+document.querySelectorAll("[data-lab]").forEach(b=>b.onclick=async()=>{const k=LAB[b.dataset.lab],o=$("labout");
+ if(!plan){o.innerHTML='<p class="note">Generate a plan in the planner first.</p>';return}
+ o.innerHTML='<p class="note">The agent is working…</p>';b.disabled=true;
+ try{const v=await llm(k.p(),!!k.json);o.innerHTML=k.r(v);k.after&&k.after();requestAnimationFrame(()=>requestAnimationFrame(()=>o.querySelectorAll("[data-w]").forEach(e=>e.style.width=e.dataset.w+"%")))}
+ catch(e){o.innerHTML='<p class="note">The agent isn’t available right now. Please try again.</p>'}b.disabled=false});
+const SK={sunset:["#e2682c","#f0b040"],ocean:["#3a9be0","#2fb5a8"],forest:["#4fa862","#c9a64a"]};
+document.querySelectorAll("[data-skin]").forEach(b=>b.onclick=()=>{const s=SK[b.dataset.skin],r=document.documentElement.style;if(s){r.setProperty("--primary",s[0]);r.setProperty("--gold",s[1])}else{r.removeProperty("--primary");r.removeProperty("--gold")}});
+/* Company-site features */
+if(J("wai_ann",0))$("ann").hidden=true;$("annx").onclick=()=>{$("ann").hidden=true;W("wai_ann",1)};
+addEventListener("scroll",()=>{const h=document.documentElement;$("pg").style.width=h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100+"%";$("top2").classList.toggle("show",h.scrollTop>600)},{passive:true});
+$("top2").onclick=()=>scrollTo({top:0,behavior:"smooth"});
+$("thm").onclick=()=>{const r=document.documentElement,d=(r.dataset.theme||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"))==="dark";r.dataset.theme=d?"light":"dark"};
+document.querySelectorAll("[data-bill]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-bill]").forEach(x=>x.classList.toggle("on",x===b));document.querySelectorAll("[data-m]").forEach(e=>e.textContent=b.dataset.bill==="y"?e.dataset.y:e.dataset.m)});
+const Q=[["Plans that adapt to the weather would save hours of re-planning.","Sample traveller feedback"],["Grounded answers feel more trustworthy than a generic chatbot.","Sample feedback, tourism partner"],["Curating local content in one place is exactly what we need.","Sample feedback, content admin"]];let qi=0;
+function showQ(i){qi=i;const q=$("qt");q.style.opacity=0;setTimeout(()=>{q.innerHTML=`<p style="font:italic 22px Georgia,serif">“${esc(Q[i][0])}”</p><p class="note">${esc(Q[i][1])}</p>`;q.style.opacity=1;$("dots").innerHTML=Q.map((_,k)=>`<button class="${k===i?"on":""}" aria-label="Show quote ${k+1}" data-q="${k}"></button>`).join("");$("dots").querySelectorAll("button").forEach(b=>b.onclick=()=>showQ(+b.dataset.q))},250)}
+showQ(0);setInterval(()=>showQ((qi+1)%Q.length),7000);
+$("cf").onsubmit=e=>{e.preventDefault();$("cm").textContent="Thanks! This demo form does not send data anywhere. A production build would post to the backend.";e.target.reset()};
+$("nf").onsubmit=e=>{e.preventDefault();$("nm2").textContent="Subscribed in this demo (nothing is sent).";e.target.reset()};
+if(J("wai_ck",null)==null)$("ck").hidden=false;
+$("cka").onclick=$("ckd").onclick=e=>{W("wai_ck",e.target.id==="cka");$("ck").hidden=true};
+const NAV=[["Problem","problem"],["How the agent works","agent"],["Plan a trip","planner"],["AI Lab","lab"],["Features","features"],["Pricing","pricing"],["Feedback","voices"],["Insights","insights"],["FAQ","faq"],["Contact","contact"],["Modules","modules"],["Architecture","architecture"],["Roadmap","roadmap"]];
+function pal(q=""){const r=NAV.filter(x=>x[0].toLowerCase().includes(q.toLowerCase()));$("pl").innerHTML=r.map(x=>`<a href="#${x[1]}">${esc(x[0])}</a>`).join("")||'<p class="note">No results.</p>'}
+const openP=()=>{$("pal").hidden=false;pal();$("pq").value="";$("pq").focus()};
+$("srch").onclick=openP;$("pq").oninput=e=>pal(e.target.value);$("pl").onclick=()=>$("pal").hidden=true;$("pal").onclick=e=>{if(e.target===$("pal"))$("pal").hidden=true};
+addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="k"){e.preventDefault();openP()}if(e.key==="Escape")$("pal").hidden=true});
+/* WanderBot: robot assistant with a brain */
+const BRAIN=["WanderAI is an AI agent for tourism guidance and trip planning, built as a college project at MIT-ADT University, Pune (MIT School of Computing).",
+"It uses Generative AI (LLMs) with Retrieval-Augmented Generation (RAG), so answers are grounded in a curated destination knowledge base and made-up places, hours and prices are reduced.",
+"The agent works in five steps: understand the request, retrieve knowledge, use tools (Maps and Weather APIs), generate a day-wise itinerary, and refine through chat.",
+"Planned tech stack: Python with FastAPI or Flask backend, React web and Flutter mobile frontends, MongoDB or MySQL for data, FAISS or ChromaDB vector database, Google Maps or OpenStreetMap, and a Weather API.",
+"Core modules: Conversational Planner, Itinerary and Routing, Tourist Guide (RAG), Live Context (weather), and User and Data module.",
+"User roles: Travellers, Content Admins who curate destination data, and System Admins who manage users and API keys.",
+"Version 1 scope: conversational input, knowledge base, day-wise itineraries, map and weather awareness, refinement and saved trips. It is not a booking platform; hotel and ticket booking, payments and crowd prediction are future phases.",
+"Future scope: multilingual support, voice interaction, budget tracking, booking integration, offline itineraries, real-time alerts, group trip planning, more cities and analytics for tourism organisations.",
+"Development is iterative (Agile) in 8 phases: requirements, data and knowledge base, agent development, backend, frontend, testing, deployment and evaluation.",
+"On this website you can generate itineraries in the planner, adapt them for rain, use the AI Lab (vibe radar, trip story with voice, phrasebook, packing and budget autopilot), sign in to save trips and ask the AI guide.",
+"In this demo, weather, costs and places are AI estimates; the full system would use live Maps and Weather APIs. Accounts are stored only in the browser."];
+const hist=[];
+const bTop=(q,n=2)=>{const w=q.toLowerCase().split(/[^a-z0-9]+/).filter(x=>x.length>2);return BRAIN.map(t=>({t,s:w.filter(x=>t.toLowerCase().includes(x)).length})).sort((a,b)=>b.s-a.s).slice(0,n)};
+const bmsg=(t,c)=>{const d=document.createElement("div");d.className="bub "+c;d.textContent=t;$("bm").appendChild(d);$("bm").scrollTop=1e5;return d};
+async function botAsk(q){q=q.trim();if(!q)return;$("bq").value="";bmsg(q,"u");const m=bmsg("Thinking…","a");$("bp").classList.add("think");let a;
+ try{a=await llm(`You are WanderBot, the friendly robot assistant on the WanderAI website. Answer ONLY about WanderAI (the project, features, technology, modules, roadmap, using this site) and about travel planning, tourism and destinations. If the question is unrelated, say politely that you can only help with WanderAI and travel, and suggest a related question. Be concise (under 100 words), warm and accurate; if the facts do not cover something, say you are not sure instead of inventing it. Facts: ${BRAIN.join(" | ")}. ${kbText(retrieve(q))}${plan?"The visitor's current plan: "+planText()+". ":""}Recent chat: ${hist.join(" / ")}. Visitor question: ${q}`,false)}
+ catch(e){const f=bTop(q,1)[0];a=(f&&f.s?f.t:"I can answer questions about WanderAI and travel planning. Try asking what WanderAI is or which technologies it uses.")+" (Offline brain: the AI service is unavailable.)"}
+ m.textContent=a;hist.push("User: "+q+" Bot: "+a.slice(0,200));if(hist.length>4)hist.shift();$("bp").classList.remove("think")}
+$("bf").onclick=()=>{const o=$("bp").hidden;$("bp").hidden=!o;$("bf").setAttribute("aria-expanded",o);if(o){$("bs").textContent="Brain: "+BRAIN.length+" facts + "+kb().length+" KB entries + AI";$("bq").focus()}};
+$("bform").onsubmit=e=>{e.preventDefault();botAsk($("bq").value)};
+document.querySelectorAll(".bc button").forEach(b=>b.onclick=()=>botAsk(b.textContent));
+try{const s=S.getItem("wai_sess");if(s)login(s)}catch(e){}
+</script>
+</body>
+</html>

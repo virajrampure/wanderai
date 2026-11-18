@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WanderAI</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1d2330;--mut:#667085;--ac:#0e7c86;--bd:#e3e6ec}
+@media(prefers-color-scheme:dark){:root{--bg:#12161d;--card:#1b212b;--tx:#e8ebf0;--mut:#98a2b3;--ac:#35b3bd;--bd:#2c3441}}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+header{padding:20px;text-align:center}header h1{margin:0;color:var(--ac)}header p{margin:4px 0 0;color:var(--mut)}
+main{max-width:980px;margin:auto;padding:0 16px 40px;display:grid;gap:16px;grid-template-columns:1fr 1fr}
+@media(max-width:800px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px}
+.full{grid-column:1/-1}label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select,button{font:inherit;padding:9px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);width:100%}
+button{background:var(--ac);color:#fff;border:0;cursor:pointer;margin-top:14px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips label{margin:0;display:flex;gap:4px;align-items:center;border:1px solid var(--bd);padding:4px 10px;border-radius:99px;font-size:13px;color:var(--tx);cursor:pointer}
+.chips input{width:auto;padding:0}.stop{padding:8px 0;border-top:1px solid var(--bd)}.stop small{color:var(--mut)}
+.ok{color:#17803d}.bad{color:#c0392b}#log{height:260px;overflow:auto;border:1px solid var(--bd);border-radius:8px;padding:10px;margin-bottom:8px;white-space:pre-wrap}
+.me{color:var(--ac)}h3{margin:12px 0 4px}
+</style></head><body>
+<header><h1>WanderAI</h1><p>AI agent for tourism guide and trip planning</p></header>
+<main>
+<section class="card"><h2>Plan a trip</h2>
+<label>Destination</label><select id="dest"></select>
+<label>Days</label><input id="days" type="number" min="1" max="10" value="3">
+<label>Travelers</label><input id="trav" type="number" min="1" max="20" value="2">
+<label>Total budget (INR)</label><input id="budget" type="number" value="25000">
+<label>Interests</label><div class="chips" id="cats"></div>
+<button onclick="plan()">Create itinerary</button></section>
+<section class="card"><h2>Ask WanderAI</h2><div id="log"></div>
+<input id="q" placeholder="e.g. Best time to visit Goa?" onkeydown="if(event.key==='Enter')ask()">
+<button onclick="ask()">Send</button></section>
+<section class="card full" id="out" hidden></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function init(){const r=await (await fetch('/api/destinations')).json();
+ $('dest').innerHTML=r.destinations.map(d=>`<option>${esc(d)}</option>`).join('');
+ $('cats').innerHTML=r.categories.map(c=>`<label><input type="checkbox" value="${esc(c)}">${esc(c)}</label>`).join('');}
+async function plan(){
+ const body={destination:$('dest').value,days:+$('days').value,travelers:+$('trav').value,budget:+$('budget').value,
+  interests:[...document.querySelectorAll('#cats input:checked')].map(i=>i.value)};
+ const res=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ if(!res.ok){alert('Could not create plan');return}
+ const p=await res.json(),b=p.budget;
+ let h=`<h2>${esc(p.destination)}: ${p.days} days, ${p.travelers} traveler(s)</h2><p>Best months: ${esc(p.best_months)} &middot; Style: ${esc(p.tier)}</p>`;
+ p.itinerary.forEach(d=>{h+=`<h3>Day ${d.day} <small>(${d.hours} h)</small></h3>`+d.stops.map(s=>
+  `<div class="stop"><b>${esc(s.name)}</b> <small>${esc(s.area)} &middot; ${esc(s.category)} &middot; ${s.hours} h &middot; &#8377;${s.cost}</small><br>${esc(s.desc)}</div>`).join('')});
+ h+=`<h3>Estimated budget</h3><p>Entry fees &#8377;${b.entry_fees} + stay, food and local travel &#8377;${b.stay_food_transport} = <b>&#8377;${b.estimated_total}</b><br>
+  <span class="${b.within_budget?'ok':'bad'}">${b.within_budget?'Within budget by &#8377;'+b.difference:'Over budget by &#8377;'+(-b.difference)}</span></p>`;
+ if(p.weather.length)h+='<h3>Weather forecast</h3>'+p.weather.map(w=>`<div class="stop">${esc(w.date)}: ${w.min_c}&ndash;${w.max_c}&deg;C, ${esc(w.summary)}, rain ${w.rain_pct}%</div>`).join('');
+ h+='<h3>Local tips</h3>'+p.tips.map(t=>`<div class="stop">${esc(t)}</div>`).join('');
+ $('out').innerHTML=h;$('out').hidden=false;$('out').scrollIntoView({behavior:'smooth'});}
+async function ask(){const q=$('q').value.trim();if(!q)return;$('q').value='';
+ $('log').innerHTML+=`<div class="me">You: ${esc(q)}</div>`;
+ const r=await (await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,destination:null})})).json();
+ $('log').innerHTML+=`<div>WanderAI: ${esc(r.answer)}</div><br>`;$('log').scrollTop=1e9;}
+init();
+</script></body></html>
